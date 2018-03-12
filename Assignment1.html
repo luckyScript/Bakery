@@ -1,0 +1,323 @@
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252"><title>ANU - CECS - COMP2310/6310 Assignment 1, 2014 </title>
+</head>
+<body bgcolor="white">
+
+
+<div align="center">
+<h1>
+<font color="#931515" size="+3">
+COMP2310/COMP6310: <br>Concurrent and Distributed Systems
+<br></font><font size="+2">Semester 2 2014</font></h1>
+
+<p>
+
+</p><h1> Assignment 1  </h1>
+<h1> A Bakery Simulation
+<!--<font color="red">(DRAFT)</font>-->
+</h1>
+
+
+<h2 align="CENTER"> Deadline: 17:00 on Friday 05 September</h2>
+
+<br>
+(Please report any errors, omissions and ambiguities
+to the course lecturer) <br>
+
+(Amendments to this document after its release in
+non-<font color="red">draft</font> will be marked in
+<font color="blue">blue</font>)
+
+
+<p>
+
+	</p></div>
+
+<hr noshade="noshade">
+This assignment is worth 18% of your total course mark. It will be 
+marked out of 36.
+
+<h2>Submission</h2>
+
+This assignment must be submitted electronically. This can be done
+using the following commands (according to your enrollment):
+<ul>
+<tt>submit comp2310 ass1 ReadMe.txt Bakery.lts Bakery.java [*.java]</tt> <br> 
+<tt>submit comp6310 ass1 ReadMe.txt Bakery.lts Bakery.java [*.java]</tt>  
+</ul>
+
+
+
+<h2>Extensions and Late Penalties</h2>
+
+See the <a href="http://courses.cecs.anu.edu.au/courses/COMP2310/assessment.html#xtns">course Assessment
+page</a>.  Note: late penalties apply even if you submit just one file
+after the deadline.
+
+<h2> Objectives </h2>
+<ul>
+
+<li> To model a concurrent system of moderate size, and its
+     safety and liveness properties.
+</li><li> To implement the model using threads with monitors.
+</li></ul>
+
+<h2> The Bakery</h2>
+
+A bakery with <em>NS</em> servers (shop attendants) can service
+<em>NC</em> customers. It serves buns, with at most <em>NB</em>
+buns being served in a single transaction.
+It can do this fairly by dispensing tickets
+(numbered 0,1, 2,...) in the order of their number.
+An incoming customer (with customer number <em>c</em>) 
+<b>take</b>s a ticket, then the next available 
+server (with the server number <em>s</em>)
+<b>call</b>s the number <en>t of next ticket to be served.
+Customer <em>c</em> then <b>pay</b>s server <em>s</em> for <em>b</em>
+buns, presenting the ticket <em>t</em> as s/he does so.
+Server <em>s</em> then gives the <em>b</em> <b>bun</b>s to customer 
+<em>c</em>.
+
+<p>
+
+For the ticket dispensing part of the system, it can be noted that
+ticket numbers can be reused after every <em>NC</em> tickets are
+dispensed. For example if <em>NC=3</em> and the following sequence of
+tickets:
+
+</p><ul><tt>0 1 2 0 1 2 0 1
+<font color="green">2 0</font></tt>
+</ul>
+
+was dispensed so far, with two green tickets taken but not yet called,
+ticket
+<tt><font color="green">2</font></tt> would be the next to
+be called, and ticket <tt><font color="green">0</font></tt>
+to be called after that. 
+
+<h2> System Description </h2>
+
+
+<p>
+
+<em>Simple system.</em>
+This is for the simple case of <em>NC=2, NS=1, NB &#8804; 2</em>.
+Ticket reuse will be necessary for the modelling part of 
+the assignment (to keep the number of states manageable),
+but is optional for the implementation.
+
+</p><p>
+
+<em>Intermediate system (part 1).</em> The model (FSP) should be able
+to handle the case <em>NC &#8804; 3, NS &#8804; 2, NB &#8804; 2</em> (at least),
+and the implementation should have no particular restrictions on these
+parameters (note: for testing this level in FSP, keep <em>NB=1</em>,
+to keep the number of actions manageable). 
+
+</p><p>
+
+<em>Intermediate system (part 2).</em> 
+
+The above scenario assumes the servers have an infinite supply of buns
+to give to customers. We will extend the system so that a server at
+any time has <em>0 &#8804; b &#8804; NB</em> buns (initially
+<em>b = NB)</em>; if a customer <b>pay</b>s for 
+<em>b' &gt; b</em> buns, the
+server must wait for a <b>topup</b> from a cook (who has an infinite
+supply). After this, the server has
+<em>NB</em> buns, and can proceed with the giving of 
+<em>b'</em> <b>bun</b>s 
+(note: for testing in FSP, keep <em>NC &#8804; 2</em>).
+It is optional whether the <b>topup</b>s occur only at the time of
+giving buns or at any time. <br>
+
+<font color="blue">The Bakery management are becoming concerned that
+some of the customers might be misusing the ticket dispensing part of
+the system, i.e. taking more than 1 ticket before paying, or
+presenting a ticket which they didn't take. Specify an
+FSP <tt>property</tt> that asserts that the customers are not doing
+that, and a composition with that property that verifies this (and
+thus reassure the management!).  In your implementation, the (bakery)
+monitor should also check this (and other kinds of correct customer behavior).
+</font>
+
+</p><p>
+
+<em>Extended System.</em> 
+
+As well as being temperamental, cooks are notorious for being unfair!
+Our bakery's cook is no exception, being quite capable of starving
+some of the servers (not to mention their unfortunate customers!).
+Specify FSP <em>progress properties</em> that each server will
+eventually get a <b>topup</b>, and write an FSP composition that shows
+that (using <em>action priority</em>) that this system does indeed
+violate progress.  Extend the system to provide a solution to this
+problem. Show that this system does not violate the progress
+property.
+
+
+</p><h2> Requirements </h2>
+
+You submission must include the following:
+<ul>
+
+<li> The <underline>plain text</underline> file
+     called <tt>ReadMe.txt</tt>, created from
+     the <a href="http://courses.cecs.anu.edu.au/courses/COMP2310/assignments/ReadMe.txt">following template file</a>, with the
+     requested information filled in, including a disclaimer.  Note
+     that significant contributions may require a revision of your
+     final mark, as this is intended to be an individual assignment.
+
+
+<p>
+
+</p></li><li> an FSP file called <tt>Bakery.lts</tt> containing a description
+     of your model.  The model should be free from deadlock and
+     (without action priority) be able to make progress.  You make
+     find the <a href="http://courses.cecs.anu.edu.au/courses/COMP2310/assignments/ModellingHints.html"> hints for large(ish) FSP
+     programs</a> helpful.
+
+<p>
+
+</p></li><li> a file called <tt>Bakery.java</tt>; this contains a 
+definition of the <tt>Bakery</tt> class, which has the 
+<tt>main()</tt> method to start the system. Classes for the components
+of your system  may be put in this file or in files separately submitted.
+<p>
+
+After the command <tt>javac Bakery.java</tt>
+<font color="blue">(clarifiaction: it must compile 
+correctly from the same directory as where the file is, i.e. <em>not</em>
+be embedded in a sub-directory within some package)</font>, the command:
+</p><ul><tt>
+java -ea Bakery [-c] [-f] [<em>NC</em>] [<em>NS</em>]  [<em>NB</em>] 
+</tt></ul>
+should run the simulation with <em>NC</em> customers (default value 2)
+and <em>NS</em> servers (default value 1) and <em>NB</em> as the bun
+limit (default value 2). If <tt>-c</tt> was specified, the system
+has a cook topping up the buns; if <tt>-f</tt> was specified,
+the cook should top-up the servers in some fair fashion.
+
+<p>
+<tt>main()</tt> must create a object from the
+provided <tt>BakeryParam</tt> class, which will obtain the simulation's
+parameters from the command line and shell environment variables. It
+must similarly create an object from the provided <tt>BakeryEvent</tt>
+class.
+
+
+</p><p>
+
+Each customer must be implemented by a separate thread (more threads
+can be optionally used for other parts of the system). </p><p>
+
+When your code completes an <em>action</em> (from your FSP model), it
+must signify this by calling the corresponding event logging method in
+the provided <tt>BakeryEvent</tt> class.  The  <tt>sleepEvents()</tt> method
+should be used for sleep of random intervals after each of these.
+To achieve both variability and reproducibility with
+randomly generated values, you should either use
+the <tt>BakeryParam</tt>'s <tt>getRandVal()</tt> method or its
+random number seed directly to seed your own generator. 
+
+</p><p>
+
+Your implementation should follow the <a href="http://courses.cecs.anu.edu.au/courses/COMP2310/assignments/MonitorGuidelines.html">
+General Guidelines for Writing Monitors</a>
+
+</p></li></ul>
+
+Lines in all 3 files should be formatted to a standard width of 80
+characters.  Your model and implementation files should follow
+standard programming style conventions.  In particular neat and
+consistent code layout and adequate commenting in both are important.
+
+<p>
+
+Your implementation may attempt any of the three levels of the system; 
+please only submit for marking the code for the highest level. 
+Marks will be allocated to the system levels approximately as follows:
+<table>
+<tbody><tr><th align="LEFT">System</th> <th>COMP2310</th> <th>COMP6310</th>  
+</tr><tr><td><em>Simple<em></em></em></td> <td>60</td>  <td>50</td> </tr>
+<tr><td><em>Intermediate I</em> </td><td>80</td>  <td>70</td> </tr>
+<tr><td><em>Intermediate II</em></td> <td>100</td> <td>90</td>  </tr>
+<tr><td><em>Extended</em></td> <td>100</td> <td>100</td> </tr>
+</tbody></table>
+
+The model and implementation code do not have to be at the same level
+(in which case this should be explained in <tt>ReadMe.txt</tt>); there
+will be approximate weighting of 1/3 for the model and 2/3 for the
+implementation (except for the Extended level, where they will be 50%
+each).  A model/implementation at a particular level with serious
+flaws/bugs is unlikely to score more marks for code attempted at a
+higher level.
+
+</p><p> 
+
+</p><h2> Bakery Parameter and Event Classes </h2>
+
+The <tt>BakeryParam</tt> class will provide some ways of controlling the
+simulation.  You can adjust these values in the shell
+which you run your program from, e.g. for the Bash shell:
+
+<ul><tt>
+export BakerySeed=50; java -ea Bakery
+</tt></ul>
+
+This will enable repeatability in random number generation between
+runs, which may be helpful when debugging. To return to default
+behavior:
+
+<ul><tt>
+unset BakerySeed
+</tt></ul>
+
+in which case, the random seed will be time dependent. Other
+environment variables used by this class are <tt>BakeryMaxEvent</tt>
+(this will cause termination after this number of events are recorded)
+and <tt>BakerySleepMax</tt> (which sets the maximum sleep time
+in <tt>BakeryEvent.sleepEvents()</tt>), and <tt>BakeryNoGui</tt>
+(suppresses the Bakery GUI when set).
+
+<p>
+
+The interface for the  <tt>BakeryParam</tt> class is:
+</p><pre>public BakeryParam(String[] args); // args as from main(String[] args)
+int  getNC(); int getNS(); int getNB();  // returns corresponding parameter
+bool useCook();      // returns if a cook tops up the buns
+bool fairCook();     // returns if a cook tops up with some fairness policy
+long getRandSeed();  // returns a random seed for the game
+int  getRandVal(int max); // returns a random number in 0..max-1
+</pre>
+
+The `interface' for the class <tt>BakeryEvent</tt> class is as follows:
+<pre>BakeryEvent(BakeryParam bakP); 
+// log respective actions + their parameters in a consistent format    
+void logTake(int custId, int ticketNum);
+void logCall(int serverId, int ticketNum);
+void logPay(int custId, int serverId, int ticketNum, int numBuns);
+void logBun(int custId, int serverId, int numBuns);
+void logTopup(int serverId);
+void logOtherEvent(String eventDescription);
+void sleepEvents(); // sleep for some random time in 0..SleepMax-1 ms
+</pre>
+
+
+For working externally, you can get a <a href="http://courses.cecs.anu.edu.au/courses/COMP2310/assignments/Bakery.zip">zip
+file</a> for such auxiliary class files and other files needed for the
+system.  It also contains a <a href="http://courses.cecs.anu.edu.au/courses/COMP2310/assignments/GuiReadMe.txt">readme
+file</a>, which contains instructions for using the GUI and for
+working externally.  On the CS student system, an up-to-date
+version of the compiled files will be available through
+your <tt>CLASSPATH</tt> environment and you will not need the zip
+file there.
+
+
+
+<h2>Implementation in Languages Other then Java</h2>
+
+This may be difficult but is not out of the question - see 
+<a href="http://courses.cecs.anu.edu.au/courses/COMP2310/assignments/Ass1AltImpl.html">this file</a> if interested. 
+
+</en></body></html>

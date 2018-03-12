@@ -1,0 +1,275 @@
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252"><title>ANU - CECS - COMP2310/6310 Assignment 2, 2014 </title>
+
+</head><body bgcolor="white">
+
+<div align="center">
+<h1>
+<font color="#931515" size="+3">
+COMP2310/COMP6310: <br>Concurrent and Distributed Systems
+<br></font><font size="+2">Semester 2 2014</font></h1>
+
+<h1>COMP2310 Assignment 2: A Distributed Bakery
+</h1>
+
+
+<!--<H1><font color="red">DRAFT! (for Java version; C version ready to go)
+</font></H1>-->
+
+
+<h2 align="CENTER"> Deadline: 17:00 on Friday 24 October </h2>
+
+<br>
+(Please report any errors, omissions and ambiguities
+to the course lecturer) <br>
+
+(Amendments to this document after its release from draft form
+ will be marked in <font color="blue">blue</font>)
+
+        </div>
+
+<hr noshade="noshade">
+This assignment is worth 12% of your total course mark. It will be
+marked out of 24.
+
+<h2>Submission</h2>
+This assignment must be submitted electronically. This can be done
+using the either of the following commands (according to your enrollment):
+<ul>
+<tt>submit comp2310 ass2 distBakery.c</tt> <br>
+<tt>submit comp2310 ass2 DistBakery.java *.java</tt>
+</ul>
+(and similarly for <tt>comp6310</tt>).
+
+<h2>Extensions and Late Penalties</h2>
+
+See the <a href="http://courses.cecs.anu.edu.au/courses/COMP2310/assessment.html#extns"> course Assessment page</a>.
+
+
+<p>
+
+</p><h2> Objectives </h2>
+<ul>
+
+<li> To implement a concurrent algorithm using two Posix-based
+     concurrency architectures: forks and sockets (or other form of
+     IPC).
+
+</li><li> To gain experience in using the message-passing paradigm with a
+     rendezvous-like client server interaction, and be able to contrast
+     it the with the shared object / monitor paradigm.
+
+</li><li> To gain experience in Posix system calls and libraries related
+towards communication and concurrency, including using appropriate
+defensive programming methods.
+
+</li></ul>
+
+<p>
+
+</p><h2> Requirements </h2>
+
+You are required to implement the Bakery simulation
+of <a href="http://courses.cecs.anu.edu.au/courses/COMP2310/assignments/Assignment1.html">Assignment 1</a> where the system
+components, both active and passive, are implemented using separate
+Unix processes which communicate by passing messages.  There must be
+an active process for each customer and the cook.  The passive process
+corresponds to the bakery monitor.
+<p>
+
+The active processes send <em>action request</em> messages to the
+monitor process, which receives these requests.  It may
+need to defer a particular request until the bakery state is ready to
+perform it (this corresponds to <em>condition synchronization</em>
+in the message passing paradigm). 
+When the bakery state is ready to accept the action,
+the monitor process must make the corresponding call to the provided 
+<a href="http://courses.cecs.anu.edu.au/courses/COMP2310/assignments/bakeryState.h">BakeryState function</a> (for Java, 
+<a href="http://courses.cecs.anu.edu.au/courses/COMP2310/assignments/BakeryState.html">BakeryState method</a>),
+which updates the bakery's state and logs the action.
+Action parameters decided by the monitor process (e.g. ticket numbers,
+server ids and number of buns received) must then be communicated
+back to the respective active process(es) (as an <em>action reply</em>).
+The monitor process may assume the active processes make action
+requests in their proper sequence.
+
+</p><p>
+
+Your main program has the same command line synopsis as for Assignment
+1 (the <tt>-f</tt> option is no longer relevant and may be ignored)
+and it must call the initialization functions in the
+<a href="http://courses.cecs.anu.edu.au/courses/COMP2310/assignments/bakeryParam.h">BakeryParam</a> and  
+<a href="http://courses.cecs.anu.edu.au/courses/COMP2310/assignments/bakeryState.h">BakeryState</a> modules
+(for Java, it should construct a <tt>BakeryParam</tt> object (as per
+Assignment 1), and pass that object to the <a href="http://courses.cecs.anu.edu.au/courses/COMP2310/assignments/BakeryState.html">
+BakeryState</a> constructor).
+It should then create all required processes and begin the simulation.
+It may use the C <a href="http://courses.cecs.anu.edu.au/courses/COMP2310/assignments/socketWrapper.h">SocketWrapper</a> library
+(especially if using sockets for IPC).
+</p><p>
+
+The <tt>BakeryState</tt> module will terminate the calling (monitor)
+process when the required number of events are logged. However it will
+not terminate the other (active) processes: these must terminate
+themselves when an attempt to read an <em>action reply</em> fails.
+
+</p><p> 
+
+Your system should follow <a href="http://courses.cecs.anu.edu.au/courses/COMP2310/assignments/MonitorGuidelines.html">
+General Guidelines for Writing Monitors</a> (read `process' for
+`thread') with respect to sleeps between actions and desirable action
+interleavings.  For full marks, your system should also minimize the
+number of useless topup actions, i.e. the cook attempts to topup a
+server who already has <em>NB</em> buns.
+
+
+</p><p>
+Please note the following for your program:
+</p><ul>
+
+<li> It will be tested on a 4-core Linux machine like those in the CS
+student labs, and it must work on those machines! <br>
+<font color="blue">Clarification: the <tt>bakeryAnalyzer </tt> tool
+will be used to determine correctness, both for detection of
+undesired behaviour (incorrect event values or sequences - if not 
+already detected by BakeryState) and showing evidence of desirable 
+behavior (indicated by
+the reported statistics).
+</font>
+
+</li><li> It should be written with good programming style (C code should
+not produce any warnings when compiled with the <tt>-Wall</tt>
+option!). It should be adequately commented and formatted to a
+standard width of 80 characters, so as to enable the reader (this
+includes your tutor/marker!) to easily read it.  A standard
+indentation of 2 or 4 spaces should also be used.  Identifiers
+should be meaningful and (unless their role is trivial) commented
+where declared, any constants should be named rather than hard-coded,
+and defensive programming should be used. The latter includes checks
+being made for system calls that can fail due to resource limitations
+(anything that creates a file descriptor or process); once detected, a
+message should be generated with a call to the system error
+function <tt>perror()</tt> and the process should exit with a status
+of 2. It also includes using
+<tt>assert</tt> to perform other kinds of checks (including overflow
+of any fixed-length data structures that you use).
+Any unused file descriptors in a process should be closed as soon as possible.
+Note that the <tt>BakeryState</tt> module will check 
+<em>action requests</em> for validity, so it is not necessary that your
+monitor process do this as well.
+
+
+</li><li> Your program must have a preamble making a declaration about the
+work you have submitted. The provided template files
+(<a href="http://courses.cecs.anu.edu.au/courses/COMP2310/assignments/distBakery.c">distBakery.c</a>,
+ <a href="http://courses.cecs.anu.edu.au/courses/COMP2310/assignments/DistBakery.java">DistBakery.java</a>) come with
+such a preamble. You must add your name and student number where
+indicated. If you need to modify the declaration, e.g. you did in fact
+receive substantial assistance from another person who is not course staff, 
+you should modify the text to say so. Code obtained from the internet
+will receive no marks even if acknowledged.
+
+</li></ul>
+
+Marks will be allocated to   approximately as follows:
+<table>
+<tbody><tr><th align="LEFT">Constraint</th> <th>% mark</th> </tr>
+<tr><td><em>NC = 1, NS = 1</em>, no cook</td> <td>60</td> </tr>
+<tr><td><em>NC &#8804; 2 NS = 1 </em>, no cook</td> <td>70</td> </tr>
+<tr><td><em>NC &#8804; 2 NS &#8804; 2</em>, no cook</td> <td> 75 </td>  </tr>
+<tr><td><em>NC &#8804; 2 NS &#8804; 2</em></td> <td> 85 </td>  </tr>
+<tr><td><em>no restriction</em></td> <td>100</td> </tr>
+</tbody></table>
+
+It is recommended that you develop your program in the above stages.
+It is also recommended that you use fixed-length messages between
+pairs of processes (e.g. a customer's <em>action request</em> might be a
+structure containing action name, ticket number, server id, etc
+attributes. If an attribute is not relevant to the action,
+it is simply ignored when received).
+
+<font color="blue">
+<h2>The Extended BakeryParam Class</h2>
+
+Java implementations will have to fork-exec child versions of the same
+program to implement the customer etc processes. The easiest way to enable a
+child instance to distinguish itself from the parent is via passing to the
+child a modified command line parameter list. However the child process
+still needs to know things like the value of <em>NC</em> and hence use
+<tt>BakeryParam</tt> as well. To support this,
+the <tt>BakeryParam</tt> module will parse command lines of the format:
+<ul><tt>
+java -ea DistBakery [-C <em>cid</em>] [-P <em>port</em>] [-g] [-c] [-f] 
+[<em>NC</em>] [<em>NS</em>] [<em>NB</em>]
+</tt></ul>
+
+The <tt>-C</tt> and <tt>-P</tt> options should never be used to
+invoke the simulation; they should only be inserted into the command
+line parameter list of the child processes (before they get created).
+<em>cid</em> is the id of the child process (use any convention you like
+to number them)
+and <em>port</em> is the port number of the listening socket of the parent.
+<tt>BakeryParam</tt> has the following extra methods to the version of
+Assignment 1:
+
+<ul><pre>boolean isChild();  // returns whether the -C option was present
+int getChildId();   // returns cid from the -C cid option (default -1)
+int getPortNo();    // returns port from the -P port option (default 0)  
+void sleepEvents(); // sleep for some random time in 0..SleepFactor-1 ms
+</pre></ul>
+</font>
+
+<h2> Compilation and Running of Codes On-site</h2>
+
+On the CS student system, you can compile your C program with the command
+<ul><tt>
+$ gcc -Wall -I $COMP2310/include -o distBakery distBakery.c 
+$COMP2310/lib/bakery.a
+</tt></ul>
+If you use Java, your program must be compilable by the command
+<ul><tt>
+$ javac DistBakery.java 
+</tt></ul>
+and be able to be run by:
+<ul><tt>
+$ java -ea DistBakery ...
+</tt></ul>
+
+<h2> Compilation and Running of Codes Off-site</h2>
+
+See <a href="http://courses.cecs.anu.edu.au/courses/COMP2310/assignments/Ass2Offsite.html"> this file</a>.
+Suffice to say it may be tricky especially on Windoze....
+
+<!--
+<font color="blue">
+For those who will use Java, please contact Brian (brian.lee@anu.edu.au) with your UniID first so that we can organize your account setting. After the change, the commands  
+<ul><tt>
+$ export _JAVA_OPTIONS="-XX:+UseSerialGC"<br>
+$ javac -cp NetAux.jar:. NetSim.java
+</font>
+</tt></ul>
+-->
+
+<!--
+To run offsite, download
+the <a href="netAux.h">netAux.h</a>, <a href="netAux.c">netAux.c</a>
+and/or <a href="NetAux.jar">NetAux.jar</a> file to your working directory.
+The commands to  compile the C and Java program is now:
+<ul><tt>
+$ gcc -Wall -o netSim netSim.c NetAux.c <br>
+$ javac -cp NetAux.jar:. NetSim.java  <br>
+</tt></ul>
+<p>
+The standard Java classes 
+<a href="http://docs.oracle.com/javase/1.5.0/docs/api/java/lang/ProcessBuilder.html">ProcessBuilder</a> (a combined fork/exec), 
+<a href="http://docs.oracle.com/javase/7/docs/api/java/net/Socket.html">
+Socket</a>, and
+<a href="http://docs.oracle.com/javase/7/docs/api/java/nio/channels/Selector.html">Selector</a>
+may be useful for this assignment. 
+There are tutorials for Java
+<a href="http://www.tutorialspoint.com/java/java_networking.htm">sockets</a>
+<font color=blue>(also text Coulouris et al, sect 4.2.2, 4.2.4)</font>
+and <a href="http://my.safaribooksonline.com/book/programming/java/0596002882/selectors/javanio-chp-4-sect-3">select</a> too.
+-->
+
+</body></html>
